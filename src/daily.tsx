@@ -192,6 +192,7 @@ export default function DailyDigest() {
       const limitedItems = mergedItems.slice(0, preferences.maxItems || 50);
 
       setItems(limitedItems);
+      cache.set(CACHE_KEY_ITEMS, JSON.stringify(limitedItems));
       cache.set("last_fetch", new Date().toISOString());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to fetch feeds");
