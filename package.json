@@ -5,7 +5,10 @@
   "description": "Daily cybersecurity news digest with AI-powered summaries. Aggregates RSS feeds from top security sources, categorizes content, and merges CVE-related articles.",
   "icon": "shield-icon.png",
   "author": "gandli",
-  "categories": ["News", "Developer Tools"],
+  "categories": [
+    "News",
+    "Developer Tools"
+  ],
   "license": "MIT",
   "commands": [
     {
@@ -57,7 +60,7 @@
   ],
   "dependencies": {
     "@raycast/api": "^1.104.7",
-    "fast-xml-parser": "^4.3.5",
+    "fast-xml-parser": "^5.4.1",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

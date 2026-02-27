@@ -119,7 +119,10 @@ export default function DailyDigest() {
                 if (pubDate >= cutoff) {
                   const title = item.title?._text || item.title || "Untitled";
                   const link =
-                    item.link?._text || item.link?.["@_href"] || item.link || "";
+                    item.link?._text ||
+                    item.link?.["@_href"] ||
+                    item.link ||
+                    "";
                   const content =
                     item.description?._text ||
                     item.description ||
@@ -183,7 +186,12 @@ export default function DailyDigest() {
       ? items
       : items.filter((item) => item.category === selectedCategory);
 
-  const categories: (Category | "all")[] = ["all", "vulnerability", "intelligence", "news"];
+  const categories: (Category | "all")[] = [
+    "all",
+    "vulnerability",
+    "intelligence",
+    "news",
+  ];
 
   return (
     <List
