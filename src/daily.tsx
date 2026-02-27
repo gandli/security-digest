@@ -9,7 +9,7 @@ import {
   getPreferenceValues,
   Cache,
 } from "@raycast/api";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import fetch from "node-fetch";
 import { XMLParser } from "fast-xml-parser";
 import { SecurityItem, Category, Preferences, OPMLFeed } from "./types";
@@ -43,13 +43,13 @@ const CATEGORY_COLORS: Record<Category, Color> = {
 };
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  vulnerability: "🛡️ 漏洞",
-  threat: "🔥 威胁情报",
-  research: "🔬 安全研究",
-  tool: "🛠️ 工具",
-  incident: "💥 安全事件",
-  news: "📰 行业动态",
-  misc: "📋 其他",
+  vulnerability: "🛡️ Vulnerability",
+  threat: "🔥 Threat Intel",
+  research: "🔬 Research",
+  tool: "🛠️ Tools",
+  incident: "💥 Incidents",
+  news: "📰 News",
+  misc: "📋 Misc",
 };
 
 export default function DailyDigest() {
@@ -59,11 +59,14 @@ export default function DailyDigest() {
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">(
     "all",
   );
+  const isFetchingRef = useRef(false);
 
   const preferences = getPreferenceValues<Preferences>();
 
   const fetchFeeds = useCallback(async () => {
+    if (isFetchingRef.current) return;
     try {
+      isFetchingRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -94,21 +97,15 @@ export default function DailyDigest() {
 
       for (const feed of selectedFeeds) {
         try {
-          console.log(`Fetching feed: ${feed.url}`);
-          const memBefore = process.memoryUsage().heapUsed / 1024 / 1024;
-
           const response = await fetch(feed.url, {
             headers: {
               "User-Agent": "security-digest/1.0",
             },
           });
           if (!response.ok) {
-            console.log(`Feed skip (not ok: ${response.status}): ${feed.url}`);
             continue;
           }
           let xmlData: string | null = await response.text();
-          console.log(`Data received (${xmlData.length} chars) from ${feed.url}`);
-
           const parsed = xmlParser.parse(xmlData);
           xmlData = null; // Clear large string immediately
 
@@ -122,8 +119,6 @@ export default function DailyDigest() {
               ? parsed.feed.entry
               : [parsed.feed.entry];
           }
-
-          console.log(`Parsed ${parsedItems.length} items from ${feed.url}`);
 
           // Filter out items older than cutoff immediately
           for (const item of parsedItems) {
@@ -153,11 +148,6 @@ export default function DailyDigest() {
               });
             }
           }
-
-          const memAfter = process.memoryUsage().heapUsed / 1024 / 1024;
-          console.log(
-            `Mem: ${memBefore.toFixed(2)}MB -> ${memAfter.toFixed(2)}MB (+${(memAfter - memBefore).toFixed(2)}MB)`,
-          );
         } catch (e) {
           console.error(`Failed to fetch feed ${feed.url}:`, e);
         }
@@ -182,6 +172,7 @@ export default function DailyDigest() {
         message: e instanceof Error ? e.message : "Failed to fetch feeds",
       });
     } finally {
+      isFetchingRef.current = false;
       setIsLoading(false);
     }
   }, [preferences]);
@@ -219,7 +210,7 @@ export default function DailyDigest() {
           {categories.map((cat) => (
             <List.Dropdown.Item
               key={cat}
-              title={cat === "all" ? "📦 全部" : CATEGORY_LABELS[cat]}
+              title={cat === "all" ? "📦 All" : CATEGORY_LABELS[cat]}
               value={cat}
             />
           ))}
@@ -289,12 +280,12 @@ export default function DailyDigest() {
 function getCategoryLabel(category: Category): string {
   const labels: Record<Category, string> = {
     vulnerability: "CVE",
-    threat: "威胁",
-    research: "研究",
-    tool: "工具",
-    incident: "事件",
-    news: "资讯",
-    misc: "其他",
+    threat: "Threat",
+    research: "Research",
+    tool: "Tool",
+    incident: "Incident",
+    news: "News",
+    misc: "Misc",
   };
   return labels[category];
 }
