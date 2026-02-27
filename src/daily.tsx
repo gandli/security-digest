@@ -94,16 +94,23 @@ export default function DailyDigest() {
 
       for (const feed of selectedFeeds) {
         try {
+          console.log(`Fetching feed: ${feed.url}`);
+          const memBefore = process.memoryUsage().heapUsed / 1024 / 1024;
+
           const response = await fetch(feed.url, {
             headers: {
               "User-Agent": "security-digest/1.0",
             },
           });
           if (!response.ok) {
+            console.log(`Feed skip (not ok: ${response.status}): ${feed.url}`);
             continue;
           }
-          const xmlData = await response.text();
+          let xmlData: string | null = await response.text();
+          console.log(`Data received (${xmlData.length} chars) from ${feed.url}`);
+
           const parsed = xmlParser.parse(xmlData);
+          xmlData = null; // Clear large string immediately
 
           let parsedItems = [];
           if (parsed.rss && parsed.rss.channel && parsed.rss.channel.item) {
@@ -115,6 +122,8 @@ export default function DailyDigest() {
               ? parsed.feed.entry
               : [parsed.feed.entry];
           }
+
+          console.log(`Parsed ${parsedItems.length} items from ${feed.url}`);
 
           // Filter out items older than cutoff immediately
           for (const item of parsedItems) {
@@ -132,18 +141,23 @@ export default function DailyDigest() {
                 "";
 
               allItems.push({
-                title,
-                link,
+                title: String(title),
+                link: String(link),
                 content:
-                  content.substring(0, 500) +
+                  String(content).substring(0, 500) +
                   (content.length > 500 ? "..." : ""),
                 pubDate,
                 source: feed.title,
                 sourceUrl: feed.url,
-                category: categorizeItem(title, content),
+                category: categorizeItem(String(title), String(content)),
               });
             }
           }
+
+          const memAfter = process.memoryUsage().heapUsed / 1024 / 1024;
+          console.log(
+            `Mem: ${memBefore.toFixed(2)}MB -> ${memAfter.toFixed(2)}MB (+${(memAfter - memBefore).toFixed(2)}MB)`,
+          );
         } catch (e) {
           console.error(`Failed to fetch feed ${feed.url}:`, e);
         }
