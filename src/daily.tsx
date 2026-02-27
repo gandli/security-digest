@@ -22,11 +22,11 @@ const parser = new Parser({
 
 const CATEGORY_ICONS: Record<Category, Icon> = {
   vulnerability: Icon.Bug,
-  threat: Icon.Flame,
+  threat: Icon.LightBulb,
   research: Icon.Book,
   tool: Icon.Hammer,
   incident: Icon.Warning,
-  news: Icon.Newspaper,
+  news: Icon.Text,
   misc: Icon.Document,
 };
 
@@ -54,7 +54,9 @@ export default function DailyDigest() {
   const [items, setItems] = useState<SecurityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState<Category | "all">(
+    "all",
+  );
 
   const preferences = getPreferenceValues<Preferences>();
 
@@ -82,34 +84,51 @@ export default function DailyDigest() {
 
       // Fetch RSS items from all feeds
       const allItems: SecurityItem[] = [];
-      const feedPromises = feeds.slice(0, preferences.maxFeeds || 20).map(async (feed) => {
-        try {
-          const rssFeed = await parser.parseURL(feed.url);
-          return rssFeed.items.map((item) => ({
-            title: item.title || "Untitled",
-            link: item.link || "",
-            content: item.contentSnippet || item.content || "",
-            pubDate: item.pubDate ? new Date(item.pubDate) : new Date(),
-            source: feed.title,
-            sourceUrl: feed.url,
-            category: categorizeItem(item.title || "", item.contentSnippet || ""),
-          }));
-        } catch (e) {
-          console.error(`Failed to fetch feed ${feed.url}:`, e);
-          return [];
-        }
-      });
+      const selectedFeeds = feeds.slice(0, preferences.maxFeeds || 20);
+      const CHUNK_SIZE = 2; // Reduce chunk size to save memory
 
-      const results = await Promise.all(feedPromises);
-      results.forEach((feedItems) => allItems.push(...feedItems));
-
-      // Filter by time window
+      // Pre-calculate cutoff time
       const hoursAgo = preferences.hoursBack || 24;
       const cutoff = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
-      const recentItems = allItems.filter((item) => item.pubDate >= cutoff);
+
+      for (let i = 0; i < selectedFeeds.length; i += CHUNK_SIZE) {
+        const chunk = selectedFeeds.slice(i, i + CHUNK_SIZE);
+        const feedPromises = chunk.map(async (feed) => {
+          try {
+            const rssFeed = await parser.parseURL(feed.url);
+            
+            // Filter out items older than cutoff immediately
+            const processedItems: SecurityItem[] = [];
+            for (const item of rssFeed.items) {
+              const pubDate = item.pubDate ? new Date(item.pubDate) : new Date();
+              if (pubDate >= cutoff) {
+                processedItems.push({
+                  title: item.title || "Untitled",
+                  link: item.link || "",
+                  content: item.contentSnippet || item.content || "",
+                  pubDate: pubDate,
+                  source: feed.title,
+                  sourceUrl: feed.url,
+                  category: categorizeItem(
+                    item.title || "",
+                    item.contentSnippet || "",
+                  ),
+                });
+              }
+            }
+            return processedItems;
+          } catch (e) {
+            console.error(`Failed to fetch feed ${feed.url}:`, e);
+            return [];
+          }
+        });
+
+        const results = await Promise.all(feedPromises);
+        results.forEach((feedItems) => allItems.push(...feedItems));
+      }
 
       // Merge CVE items
-      const mergedItems = mergeCVEItems(recentItems);
+      const mergedItems = mergeCVEItems(allItems);
 
       // Sort by date
       mergedItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
@@ -179,12 +198,15 @@ export default function DailyDigest() {
         />
       ) : filteredItems.length === 0 ? (
         <List.EmptyView
-          icon={Icon.Newspaper}
+          icon={Icon.Text}
           title="No news found"
           description="Try adjusting your time window or check your feeds"
         />
       ) : (
-        <List.Section title={`${filteredItems.length} items`} subtitle={`Last ${preferences.hoursBack || 24}h`}>
+        <List.Section
+          title={`${filteredItems.length} items`}
+          subtitle={`Last ${preferences.hoursBack || 24}h`}
+        >
           {filteredItems.map((item, index) => (
             <List.Item
               key={`${item.link}-${index}`}
@@ -200,12 +222,18 @@ export default function DailyDigest() {
               ]}
               actions={
                 <ActionPanel>
-                  <Action.OpenInBrowser url={item.link} title="Open in Browser" />
+                  <Action.OpenInBrowser
+                    url={item.link}
+                    title="Open in Browser"
+                  />
                   <Action.CopyToClipboard
                     content={`[${item.title}](${item.link})`}
                     title="Copy Markdown Link"
                   />
-                  <Action.CopyToClipboard content={item.link} title="Copy URL" />
+                  <Action.CopyToClipboard
+                    content={item.link}
+                    title="Copy URL"
+                  />
                   <Action
                     icon={Icon.ArrowClockwise}
                     title="Refresh"

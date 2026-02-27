@@ -58,7 +58,7 @@ export default function ManageSources() {
     const updated = [...feeds, feed];
     setFeeds(updated);
     await LocalStorage.setItem("custom_feeds", JSON.stringify(updated));
-    
+
     setNewFeed({ title: "", url: "", category: "" });
     setShowForm(false);
     showToast({ style: Toast.Style.Success, title: "Feed added" });
@@ -73,7 +73,10 @@ export default function ManageSources() {
 
   const loadFromOPML = async () => {
     if (!preferences.opmlUrl) {
-      showToast({ style: Toast.Style.Failure, title: "No OPML URL configured" });
+      showToast({
+        style: Toast.Style.Failure,
+        title: "No OPML URL configured",
+      });
       return;
     }
 
@@ -82,9 +85,16 @@ export default function ManageSources() {
       const parsed = parseOPML(content);
       setFeeds(parsed);
       await LocalStorage.setItem("custom_feeds", JSON.stringify(parsed));
-      showToast({ style: Toast.Style.Success, title: `Loaded ${parsed.length} feeds` });
+      showToast({
+        style: Toast.Style.Success,
+        title: `Loaded ${parsed.length} feeds`,
+      });
     } catch (e) {
-      showToast({ style: Toast.Style.Failure, title: "Failed to load OPML", message: String(e) });
+      showToast({
+        style: Toast.Style.Failure,
+        title: "Failed to load OPML",
+        message: String(e),
+      });
     }
   };
 
