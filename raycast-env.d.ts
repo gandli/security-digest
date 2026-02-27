@@ -15,7 +15,9 @@ type ExtensionPreferences = {
   /** Max Items - Maximum number of items to display */
   "maxItems": string,
   /** Max Feeds - Maximum number of feeds to fetch */
-  "maxFeeds": string
+  "maxFeeds": string,
+  /** Language / 语言 - Select UI language (English/Chinese) */
+  "language": "en" | "zh"
 }
 
 /** Preferences accessible in all the extension's commands */
