@@ -78,7 +78,7 @@ export default function DailyDigest() {
       isFetchingRef.current = true;
       isFetchingRef.current = true;
       setError(null);
-      
+
       // If we don't have items yet, try loading from cache for instant display
       if (items.length === 0) {
         restoreItemsFromCache();
