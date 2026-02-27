@@ -51,13 +51,40 @@ export default function DailyDigest() {
   const isFetchingRef = useRef(false);
 
   const preferences = useMemo(() => getPreferenceValues(), []);
+  const CACHE_KEY_ITEMS = "security_items_cache";
+
+  const restoreItemsFromCache = useCallback(() => {
+    const cached = cache.get(CACHE_KEY_ITEMS);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached) as SecurityItem[];
+        const restored = parsed.map((item) => ({
+          ...item,
+          pubDate: new Date(item.pubDate),
+        }));
+        setItems(restored);
+        setIsLoading(false);
+        return true;
+      } catch (e) {
+        console.error("Failed to parse cache", e);
+      }
+    }
+    return false;
+  }, []);
 
   const fetchFeeds = useCallback(async () => {
     if (isFetchingRef.current) return;
     try {
       isFetchingRef.current = true;
-      setIsLoading(true);
+      isFetchingRef.current = true;
       setError(null);
+      
+      // If we don't have items yet, try loading from cache for instant display
+      if (items.length === 0) {
+        restoreItemsFromCache();
+      }
+
+      setIsLoading(true);
 
       let feeds: OPMLFeed[] = [];
 
