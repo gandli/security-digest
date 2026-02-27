@@ -56,7 +56,7 @@ export function getBuiltinFeeds(): OPMLFeed[] {
     {
       title: "Krebs on Security",
       url: "https://krebsonsecurity.com/feed/",
-      category: "Threat Intel",
+      category: "Intelligence",
     },
     {
       title: "The Hacker News",
@@ -78,36 +78,36 @@ export function getBuiltinFeeds(): OPMLFeed[] {
     {
       title: "Google Project Zero",
       url: "https://googleprojectzero.blogspot.com/feeds/posts/default",
-      category: "Research",
+      category: "Intelligence",
     },
     {
       title: "Trail of Bits Blog",
       url: "https://blog.trailofbits.com/feed",
-      category: "Research",
+      category: "Intelligence",
     },
 
     // Vendor Blogs
     {
       title: "Microsoft Security Blog",
       url: "https://www.microsoft.com/security/blog/feed/",
-      category: "Vendor",
+      category: "Intelligence",
     },
     {
       title: "Cloudflare Blog",
       url: "https://blog.cloudflare.com/rss/",
-      category: "Vendor",
+      category: "Intelligence",
     },
     {
       title: "Unit42 (Palo Alto)",
       url: "https://unit42.paloaltonetworks.com/feed/",
-      category: "Threat Intel",
+      category: "Intelligence",
     },
 
     // Tools & Resources
     {
       title: "PortSwigger Blog",
       url: "https://portswigger.net/blog/rss",
-      category: "Tools",
+      category: "News",
     },
     {
       title: "SANS Internet Storm Center",

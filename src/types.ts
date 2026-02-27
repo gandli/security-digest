@@ -1,11 +1,4 @@
-export type Category =
-  | "vulnerability"
-  | "threat"
-  | "research"
-  | "tool"
-  | "incident"
-  | "news"
-  | "misc";
+export type Category = "vulnerability" | "intelligence" | "news";
 
 export interface SecurityItem {
   title: string;

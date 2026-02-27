@@ -24,32 +24,20 @@ const xmlParser = new XMLParser({
 
 const CATEGORY_ICONS: Record<Category, Icon> = {
   vulnerability: Icon.Bug,
-  threat: Icon.LightBulb,
-  research: Icon.Book,
-  tool: Icon.Hammer,
-  incident: Icon.Warning,
+  intelligence: Icon.LightBulb,
   news: Icon.Text,
-  misc: Icon.Document,
 };
 
 const CATEGORY_COLORS: Record<Category, Color> = {
   vulnerability: Color.Red,
-  threat: Color.Orange,
-  research: Color.Blue,
-  tool: Color.Purple,
-  incident: Color.Yellow,
+  intelligence: Color.Orange,
   news: Color.Green,
-  misc: Color.SecondaryText,
 };
 
 const CATEGORY_LABELS: Record<Category, string> = {
   vulnerability: "🛡️ Vulnerability",
-  threat: "🔥 Threat Intel",
-  research: "🔬 Research",
-  tool: "🛠️ Tools",
-  incident: "💥 Incidents",
+  intelligence: "🔥 Intelligence",
   news: "📰 News",
-  misc: "📋 Misc",
 };
 
 export default function DailyDigest() {
@@ -195,16 +183,7 @@ export default function DailyDigest() {
       ? items
       : items.filter((item) => item.category === selectedCategory);
 
-  const categories: (Category | "all")[] = [
-    "all",
-    "vulnerability",
-    "threat",
-    "research",
-    "tool",
-    "incident",
-    "news",
-    "misc",
-  ];
+  const categories: (Category | "all")[] = ["all", "vulnerability", "intelligence", "news"];
 
   return (
     <List
@@ -289,12 +268,8 @@ export default function DailyDigest() {
 function getCategoryLabel(category: Category): string {
   const labels: Record<Category, string> = {
     vulnerability: "CVE",
-    threat: "Threat",
-    research: "Research",
-    tool: "Tool",
-    incident: "Incident",
+    intelligence: "Intel",
     news: "News",
-    misc: "Misc",
   };
   return labels[category];
 }

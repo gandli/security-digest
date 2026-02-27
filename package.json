@@ -77,5 +77,6 @@
   },
   "overrides": {
     "@types/react": "18.2.79"
-  }
+  },
+  "version": "0.0.1"
 }

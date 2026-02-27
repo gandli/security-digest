@@ -3,7 +3,7 @@ import { Category, SecurityItem } from "./types";
 export function categorizeItem(title: string, content: string): Category {
   const text = `${title} ${content}`.toLowerCase();
 
-  // CVE/Vulnerability patterns
+  // Vulnerability: CVEs, exploits, patches, zero-days
   if (
     /cve-\d{4}-\d+/i.test(text) ||
     /vulnerability|exploit|patch|zero-day|zeroday/i.test(text)
@@ -11,36 +11,17 @@ export function categorizeItem(title: string, content: string): Category {
     return "vulnerability";
   }
 
-  // Threat Intel patterns
+  // Intelligence: Threat actors, malware, research, incidents, breaches
   if (
-    /apt\s*\d+|ransomware|malware|phishing|apt group|threat actor|ioc/i.test(
+    /apt\s*\d+|ransomware|malware|phishing|apt group|threat actor|ioc|research|analysis|technical|breach|leak|hack|attack|incident|compromised/i.test(
       text,
     )
   ) {
-    return "threat";
+    return "intelligence";
   }
 
-  // Security Research patterns
-  if (/research|analysis|deep dive|technical|whitepaper|paper\b/i.test(text)) {
-    return "research";
-  }
-
-  // Tool patterns
-  if (/tool|scanner|framework|github|release|open.?source/i.test(text)) {
-    return "tool";
-  }
-
-  // Incident patterns
-  if (/breach|leak|hack|attack|incident|compromised/i.test(text)) {
-    return "incident";
-  }
-
-  // News patterns
-  if (/regulation|compliance|policy|acquisition|funding|industry/i.test(text)) {
-    return "news";
-  }
-
-  return "misc";
+  // News: General industry, tools, regulation, misc
+  return "news";
 }
 
 export function mergeCVEItems(items: SecurityItem[]): SecurityItem[] {
