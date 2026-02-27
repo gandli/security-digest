@@ -2,6 +2,11 @@
 
 A Raycast extension for daily cybersecurity news digest with optimized fetching and streamlined categorization.
 
+<p align="center">
+  <img src="metadata/1.png" width="350" alt="Security Digest Screenshot 1" />
+  <img src="metadata/2.png" width="350" alt="Security Digest Screenshot 2" />
+</p>
+
 ## Features
 
 - 📰 **Daily Digest** - Quick access to the latest security news
