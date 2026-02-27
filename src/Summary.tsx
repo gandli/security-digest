@@ -1,4 +1,11 @@
-import { Detail, ActionPanel, Action, AI, environment, Color } from "@raycast/api";
+import {
+  Detail,
+  ActionPanel,
+  Action,
+  AI,
+  environment,
+  Color,
+} from "@raycast/api";
 import { useAI } from "@raycast/utils";
 import { SecurityItem } from "./types";
 
@@ -23,7 +30,10 @@ Content: ${item.content}`;
         markdown={`# AI Error\n\n${error}`}
         actions={
           <ActionPanel>
-            <Action.OpenInBrowser title="Check Raycast AI Status" url="https://status.raycast.com" />
+            <Action.OpenInBrowser
+              title="Check Raycast AI Status"
+              url="https://status.raycast.com"
+            />
           </ActionPanel>
         }
       />
@@ -36,7 +46,10 @@ Content: ${item.content}`;
         markdown="# AI Access Required\n\nThis feature requires **Raycast Pro**. Please upgrade to use built-in AI summaries."
         actions={
           <ActionPanel>
-            <Action.OpenInBrowser title="Upgrade to Raycast Pro" url="https://www.raycast.com/pro" />
+            <Action.OpenInBrowser
+              title="Upgrade to Raycast Pro"
+              url="https://www.raycast.com/pro"
+            />
           </ActionPanel>
         }
       />
@@ -62,9 +75,15 @@ ${item.content}
       metadata={
         <Detail.Metadata>
           <Detail.Metadata.Label title="Source" text={item.source} />
-          <Detail.Metadata.Label title="Date" text={item.pubDate.toLocaleDateString()} />
+          <Detail.Metadata.Label
+            title="Date"
+            text={item.pubDate.toLocaleDateString()}
+          />
           <Detail.Metadata.TagList title="Category">
-            <Detail.Metadata.TagList.Item text={item.category} color={getCategoryColor(item.category)} />
+            <Detail.Metadata.TagList.Item
+              text={item.category}
+              color={getCategoryColor(item.category)}
+            />
           </Detail.Metadata.TagList>
         </Detail.Metadata>
       }
