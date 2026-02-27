@@ -160,9 +160,7 @@ export default function ManageSources() {
         title={t("sources_empty_title", undefined, lang)}
         description={t("sources_empty_desc", undefined, lang)}
       />
-      <List.Section
-        title={t("items_count", { count: feeds.length }, lang)}
-      >
+      <List.Section title={t("items_count", { count: feeds.length }, lang)}>
         {feeds.map((feed, index) => (
           <List.Item
             key={`${feed.url}-${index}`}
@@ -199,11 +197,16 @@ export default function ManageSources() {
         />
         <List.Item
           title={t("sources_load_opml", undefined, lang)}
-          subtitle={preferences.opmlUrl || t("sources_not_configured", undefined, lang)}
+          subtitle={
+            preferences.opmlUrl || t("sources_not_configured", undefined, lang)
+          }
           icon={Icon.Download}
           actions={
             <ActionPanel>
-              <Action title={t("sources_btn_load_opml", undefined, lang)} onAction={loadFromOPML} />
+              <Action
+                title={t("sources_btn_load_opml", undefined, lang)}
+                onAction={loadFromOPML}
+              />
             </ActionPanel>
           }
         />
@@ -212,7 +215,10 @@ export default function ManageSources() {
           icon={Icon.ArrowClockwise}
           actions={
             <ActionPanel>
-              <Action title={t("action_refresh", undefined, lang)} onAction={loadFeeds} />
+              <Action
+                title={t("action_refresh", undefined, lang)}
+                onAction={loadFeeds}
+              />
             </ActionPanel>
           }
         />
