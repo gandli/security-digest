@@ -90,67 +90,76 @@ export default function DailyDigest() {
       // Fetch RSS items from all feeds
       const allItems: SecurityItem[] = [];
       const selectedFeeds = feeds.slice(0, preferences.maxFeeds || 20);
+      const CHUNK_SIZE = 5;
 
       // Pre-calculate cutoff time
       const hoursAgo = preferences.hoursBack || 24;
       const cutoff = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
 
-      for (const feed of selectedFeeds) {
-        try {
-          const response = await fetch(feed.url, {
-            headers: {
-              "User-Agent": "security-digest/1.0",
-            },
-          });
-          if (!response.ok) {
-            continue;
-          }
-          let xmlData: string | null = await response.text();
-          const parsed = xmlParser.parse(xmlData);
-          xmlData = null; // Clear large string immediately
-
-          let parsedItems = [];
-          if (parsed.rss && parsed.rss.channel && parsed.rss.channel.item) {
-            parsedItems = Array.isArray(parsed.rss.channel.item)
-              ? parsed.rss.channel.item
-              : [parsed.rss.channel.item];
-          } else if (parsed.feed && parsed.feed.entry) {
-            parsedItems = Array.isArray(parsed.feed.entry)
-              ? parsed.feed.entry
-              : [parsed.feed.entry];
-          }
-
-          // Filter out items older than cutoff immediately
-          for (const item of parsedItems) {
-            const dateStr = item.pubDate || item.published || item.updated;
-            const pubDate = dateStr ? new Date(dateStr) : new Date();
-            if (pubDate >= cutoff) {
-              const title = item.title?._text || item.title || "Untitled";
-              const link =
-                item.link?._text || item.link?.["@_href"] || item.link || "";
-              const content =
-                item.description?._text ||
-                item.description ||
-                item.content?._text ||
-                item.summary?._text ||
-                "";
-
-              allItems.push({
-                title: String(title),
-                link: String(link),
-                content:
-                  String(content).substring(0, 500) +
-                  (content.length > 500 ? "..." : ""),
-                pubDate,
-                source: feed.title,
-                sourceUrl: feed.url,
-                category: categorizeItem(String(title), String(content)),
+      for (let i = 0; i < selectedFeeds.length; i += CHUNK_SIZE) {
+        const chunk = selectedFeeds.slice(i, i + CHUNK_SIZE);
+        const results = await Promise.all(
+          chunk.map(async (feed) => {
+            try {
+              const response = await fetch(feed.url, {
+                headers: {
+                  "User-Agent": "security-digest/1.0",
+                },
               });
+              if (!response.ok) {
+                return [];
+              }
+              let xmlData: string | null = await response.text();
+              const parsed = xmlParser.parse(xmlData);
+              xmlData = null;
+
+              const feedItems: SecurityItem[] = [];
+              let parsedItems = [];
+              if (parsed.rss && parsed.rss.channel && parsed.rss.channel.item) {
+                parsedItems = Array.isArray(parsed.rss.channel.item)
+                  ? parsed.rss.channel.item
+                  : [parsed.rss.channel.item];
+              } else if (parsed.feed && parsed.feed.entry) {
+                parsedItems = Array.isArray(parsed.feed.entry)
+                  ? parsed.feed.entry
+                  : [parsed.feed.entry];
+              }
+
+              for (const item of parsedItems) {
+                const dateStr = item.pubDate || item.published || item.updated;
+                const pubDate = dateStr ? new Date(dateStr) : new Date();
+                if (pubDate >= cutoff) {
+                  const title = item.title?._text || item.title || "Untitled";
+                  const link =
+                    item.link?._text || item.link?.["@_href"] || item.link || "";
+                  const content =
+                    item.description?._text ||
+                    item.description ||
+                    item.content?._text ||
+                    item.summary?._text ||
+                    "";
+
+                  feedItems.push({
+                    title: String(title),
+                    link: String(link),
+                    content:
+                      String(content).substring(0, 500) +
+                      (content.length > 500 ? "..." : ""),
+                    pubDate,
+                    source: feed.title,
+                    sourceUrl: feed.url,
+                    category: categorizeItem(String(title), String(content)),
+                  });
+                }
+              }
+              return feedItems;
+            } catch (e) {
+              console.error(`Failed to fetch feed ${feed.url}:`, e);
+              return [];
             }
-          }
-        } catch (e) {
-          console.error(`Failed to fetch feed ${feed.url}:`, e);
-        }
+          }),
+        );
+        results.forEach((items) => allItems.push(...items));
       }
 
       // Merge CVE items
