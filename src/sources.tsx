@@ -177,7 +177,7 @@ export default function ManageSources() {
           icon={Icon.Download}
           actions={
             <ActionPanel>
-              <Action title="Load OPML" onAction={loadFromOPML} />
+              <Action title="Load Opml" onAction={loadFromOPML} />
             </ActionPanel>
           }
         />

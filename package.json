@@ -63,7 +63,7 @@
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.11",
     "@types/node": "20.10.0",
-    "@types/react": "18.2.79",
+    "@types/react": "18.2.0",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "typescript": "^5.4.0"
@@ -74,5 +74,8 @@
     "fix-lint": "ray lint --fix",
     "lint": "ray lint",
     "publish": "npx @raycast/api@latest publish"
+  },
+  "overrides": {
+    "@types/react": "18.2.0"
   }
 }

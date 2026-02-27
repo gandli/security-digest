@@ -10,14 +10,16 @@ import {
   Cache,
 } from "@raycast/api";
 import { useEffect, useState, useCallback } from "react";
-import Parser from "rss-parser";
+import fetch from "node-fetch";
+import { XMLParser } from "fast-xml-parser";
 import { SecurityItem, Category, Preferences, OPMLFeed } from "./types";
 import { parseOPML, fetchOPMLFromURL, getBuiltinFeeds } from "./opml";
 import { categorizeItem, mergeCVEItems } from "./utils";
 
 const cache = new Cache();
-const parser = new Parser({
-  timeout: 10000,
+const xmlParser = new XMLParser({
+  ignoreAttributes: false,
+  textNodeName: "_text",
 });
 
 const CATEGORY_ICONS: Record<Category, Icon> = {
@@ -92,23 +94,53 @@ export default function DailyDigest() {
 
       for (const feed of selectedFeeds) {
         try {
-          const rssFeed = await parser.parseURL(feed.url);
-          
+          const response = await fetch(feed.url, {
+            headers: {
+              "User-Agent": "security-digest/1.0",
+            },
+          });
+          if (!response.ok) {
+            continue;
+          }
+          const xmlData = await response.text();
+          const parsed = xmlParser.parse(xmlData);
+
+          let parsedItems = [];
+          if (parsed.rss && parsed.rss.channel && parsed.rss.channel.item) {
+            parsedItems = Array.isArray(parsed.rss.channel.item)
+              ? parsed.rss.channel.item
+              : [parsed.rss.channel.item];
+          } else if (parsed.feed && parsed.feed.entry) {
+            parsedItems = Array.isArray(parsed.feed.entry)
+              ? parsed.feed.entry
+              : [parsed.feed.entry];
+          }
+
           // Filter out items older than cutoff immediately
-          for (const item of rssFeed.items) {
-            const pubDate = item.pubDate ? new Date(item.pubDate) : new Date();
+          for (const item of parsedItems) {
+            const dateStr = item.pubDate || item.published || item.updated;
+            const pubDate = dateStr ? new Date(dateStr) : new Date();
             if (pubDate >= cutoff) {
+              const title = item.title?._text || item.title || "Untitled";
+              const link =
+                item.link?._text || item.link?.["@_href"] || item.link || "";
+              const content =
+                item.description?._text ||
+                item.description ||
+                item.content?._text ||
+                item.summary?._text ||
+                "";
+
               allItems.push({
-                title: item.title || "Untitled",
-                link: item.link || "",
-                content: item.contentSnippet || item.content || "",
-                pubDate: pubDate,
+                title,
+                link,
+                content:
+                  content.substring(0, 500) +
+                  (content.length > 500 ? "..." : ""),
+                pubDate,
                 source: feed.title,
                 sourceUrl: feed.url,
-                category: categorizeItem(
-                  item.title || "",
-                  item.contentSnippet || "",
-                ),
+                category: categorizeItem(title, content),
               });
             }
           }
