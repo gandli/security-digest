@@ -54,6 +54,17 @@ export default function ManageSources() {
       return;
     }
 
+    // Validate URL format
+    try {
+      new URL(newFeed.url);
+    } catch {
+      showToast({
+        style: Toast.Style.Failure,
+        title: t("sources_toast_invalid_url", undefined, lang),
+      });
+      return;
+    }
+
     const feed: OPMLFeed = {
       title: newFeed.title,
       url: newFeed.url,
@@ -161,28 +172,37 @@ export default function ManageSources() {
         description={t("sources_empty_desc", undefined, lang)}
       />
       <List.Section title={t("items_count", { count: feeds.length }, lang)}>
-        {feeds.map((feed, index) => (
-          <List.Item
-            key={`${feed.url}-${index}`}
-            title={feed.title}
-            subtitle={feed.category}
-            icon={Icon.Link}
-            accessories={[{ text: new URL(feed.url).hostname }]}
-            actions={
-              <ActionPanel>
-                <Action.OpenInBrowser url={feed.url} 
-                title={t("action_open_browser", undefined, lang)}
-                />
-                <Action
-                  title={t("sources_action_remove", undefined, lang)}
-                  icon={Icon.Trash}
-                  style={Action.Style.Destructive}
-                  onAction={() => removeFeed(feed.url)}
-                />
-              </ActionPanel>
-            }
-          />
-        ))}
+        {feeds.map((feed, index) => {
+          // Safely extract hostname
+          let hostname = "";
+          try {
+            hostname = new URL(feed.url).hostname;
+          } catch {
+            hostname = feed.url;
+          }
+          return (
+            <List.Item
+              key={`${feed.url}-${index}`}
+              title={feed.title}
+              subtitle={feed.category}
+              icon={Icon.Link}
+              accessories={[{ text: hostname }]}
+              actions={
+                <ActionPanel>
+                  <Action.OpenInBrowser url={feed.url} 
+                  title={t("action_open_browser", undefined, lang)}
+                  />
+                  <Action
+                    title={t("sources_action_remove", undefined, lang)}
+                    icon={Icon.Trash}
+                    style={Action.Style.Destructive}
+                    onAction={() => removeFeed(feed.url)}
+                  />
+                </ActionPanel>
+              }
+            />
+          );
+        })}
       </List.Section>
       <List.Section title={t("sources_section_actions", undefined, lang)}>
         <List.Item
