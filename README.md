@@ -49,7 +49,7 @@ The extension includes a curated list of reliable security feeds classified into
 
 You can use the [CyberSecurityRSS](https://github.com/zer0yu/CyberSecurityRSS) OPML for 700+ security feeds:
 
-```
+```text
 https://raw.githubusercontent.com/zer0yu/CyberSecurityRSS/master/tiny.opml
 ```
 
